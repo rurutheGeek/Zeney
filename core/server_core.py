@@ -4,6 +4,7 @@ import json
 import pickle
 import time
 import copy
+import pprint
 
 from blockchain.blockchain_manager import BlockchainManager
 from blockchain.block_builder import BlockBuilder
@@ -30,7 +31,7 @@ STATE_CONNECTED_TO_CENTRAL = 2
 STATE_SHUTTING_DOWN = 3
 
 # TransactionPoolの確認頻度(秒)
-CHECK_INTERVAL = 10
+CHECK_INTERVAL = 20
 
 
 class ServerCore:
@@ -80,7 +81,7 @@ class ServerCore:
     def shutdown(self):
         self.server_state = STATE_SHUTTING_DOWN
         self.flag_stop_block_build = True
-        print('Shutdown server...')
+        print('サーバをシャットダウンします...')
         self.cm.connection_close()
         self.stop_block_building()
 
@@ -99,13 +100,14 @@ class ServerCore:
 
     def __generate_block_with_tp(self):
 
-        print('generate_block_with_tp のスレッドが開始されました')
+        #print('generate_block_with_tp が呼び出されました')
+        print('[定期]トランザクションプールを確認...')
         while not self.flag_stop_block_build:
             self.is_bb_running = True
             prev_hash = copy.copy(self.prev_block_hash)
             result = self.tp.get_stored_transactions()
             if len(result) == 0:
-                print('トランザクションプールは空です ...')
+                print('空でした')
                 break
             new_tp = self.bm.remove_useless_transaction(result)
             self.tp.renew_my_transactions(new_tp)
@@ -113,7 +115,7 @@ class ServerCore:
                 break
             # リワードとしてリストの先頭に自分宛のCoinbaseTransactionを追加する
             total_fee = self.tp.get_total_fee_from_tp()
-            # TODO: インセンティブの値をここに直書きするのはイケてないのであとで対処する
+            # TODO: インセンティブの値
             total_fee += 30
             my_coinbase_t = CoinbaseTransaction(self.km.my_address(), total_fee)
             transactions_4_block = copy.deepcopy(new_tp)
@@ -133,8 +135,10 @@ class ServerCore:
                 print('Bad Block. ブロックは生成済です')
                 break
 
-        print('現在のブロックチェーン ... ', self.bm.chain)
-        print('現在の前ブロックのハッシュ ... ', self.prev_block_hash)
+        print('現在のブロックチェーン')
+        pprint.pprint(self.bm.chain)
+        print('')
+        #print('現在の前ブロックのハッシュ ... ', self.prev_block_hash)
         self.flag_stop_block_build = False
         self.is_bb_running = False
         self.bb_timer = threading.Timer(CHECK_INTERVAL, self.__generate_block_with_tp)

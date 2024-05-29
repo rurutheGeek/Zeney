@@ -45,7 +45,7 @@ class ClientCore:
 
     def shutdown(self):
         self.client_state = STATE_SHUTTING_DOWN
-        print('ウォレットノードをシャットダウン ...')
+        print('ウォレットをシャットダウンします ...')
         self.cm.connection_close()
 
     def get_my_current_state(self):
@@ -53,7 +53,6 @@ class ClientCore:
 
     def send_message_to_my_core_node(self, msg_type, msg):
         msg_txt = self.cm.get_message_text(msg_type, msg)
-        print(msg_txt)
         self.cm.send_msg((self.my_core_host, self.my_core_port), msg_txt)
 
     def send_req_full_chain_to_my_core_node(self):

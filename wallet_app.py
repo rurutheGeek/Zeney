@@ -322,7 +322,7 @@ class Zeney_Gui(Frame):
 
         if result:
             if 0 < utxo_len:
-                print('送信した{} Zeneyが受け取られました:\n {}'.format(sendAtp, recipientKey))
+                print('{}Zeney を送信します\n宛先:{}\n'.format(sendAtp, recipientKey))
             else:
                 messagebox.showwarning('Zeneyが不足しています', '送信するZeneyが足りません')
                 return
@@ -358,8 +358,9 @@ class Zeney_Gui(Frame):
                 # TransactionをP2P Networkに送信
                 tx_strings = json.dumps(new_tx)
                 self.c_core.send_message_to_my_core_node(MSG_NEW_TRANSACTION, tx_strings)
-                print('署名済 new_tx:')
+                print('署名済のトランザクション:')
                 pprint.pprint(tx_strings)
+                print('')
                 # 実験的にお釣り分の勘定のため新しく生成したTransactionをUTXOとして追加しておくが
                 # 本来はブロックチェーンの更新に合わせて再計算した方が適切
                 self.um.put_utxo_tx(t.to_dict())

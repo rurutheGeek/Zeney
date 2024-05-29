@@ -1,0 +1,1 @@
+python ../Server1.py 50000 key1

@@ -4,6 +4,7 @@ import pickle
 import codecs
 import pprint
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import wait
 
 from .core_node_list import CoreNodeList
 from .message_manager import (
@@ -19,9 +20,11 @@ from .message_manager import (
     OK_WITHOUT_PAYLOAD,
 )
 
-# 動作確認用の値。本来は30分(1800)くらいがいいのでは
-PING_INTERVAL = 10
-
+PING_INTERVAL = 1800
+# 受信可能数
+BACKLOG = 5
+# 最大同時処理数
+MAXWORKER = 5
 
 class ConnectionManager4Edge(object):
 
@@ -64,7 +67,7 @@ class ConnectionManager4Edge(object):
         """
         msgtxt = self.mm.build(msg_type, self.port, payload)
         #print('生成されたメッセージ:', msgtxt)
-        pprint.pprint(msgtxt)
+        #pprint.pprint(msgtxt)
         return msgtxt
 
     def send_msg(self, peer, msg):
@@ -77,6 +80,7 @@ class ConnectionManager4Edge(object):
         """
         print('メッセージを送信します... ')
         pprint.pprint(msg)
+        print('')
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((peer))
@@ -118,7 +122,7 @@ class ConnectionManager4Edge(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
         msg = self.mm.build(MSG_ADD_AS_EDGE, self.port)
-        print(msg)
+        #print(msg)
         s.sendall(msg.encode('utf-8'))
         s.close()
 
@@ -128,20 +132,17 @@ class ConnectionManager4Edge(object):
         """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.host, self.port))
-        self.socket.listen(0)
+        self.socket.listen(BACKLOG)
 
-        executor = ThreadPoolExecutor(max_workers=10)
+        with ThreadPoolExecutor(max_workers=MAXWORKER) as self.executor:
+            while True:
+                print('接続の待機を開始します ...\n')
+                soc, addr = self.socket.accept()
+                print('接続されました ... ', addr)
 
-        while True:
-
-            print('接続を待機中 ...')
-            soc, addr = self.socket.accept()
-            print('接続されました ... ', addr)
-            data_sum = ''
-
-            params = (soc, addr, data_sum)
-            executor.submit(self.__handle_message, params)
-
+                params = (soc, addr, '')
+                future = self.executor.submit(self.__handle_message, params)
+                _ = wait([future])
 
     def __handle_message(self, params):
         """

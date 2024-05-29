@@ -158,14 +158,13 @@ class UTXOManager:
         """
         利用可能額の合計値を計算する
         """
-        print('_compute_my_balance が呼び出されました')
+        print('残高を計算します...')
         balance = 0
         txs = self.utxo_txs
         for t in txs:
             for txout in t[0]['outputs']:
-                print('txout:')
-                pprint.pprint(txout)
+                print('未使用のアウトプット:',txout['value'])
                 if txout['recipient'] == self.my_address:
                     balance += txout['value']
-
+        print('')
         self.my_balance = balance

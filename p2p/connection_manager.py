@@ -3,6 +3,7 @@ import threading
 import pickle
 import codecs
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import wait
 
 from .core_node_list import CoreNodeList
 from .edge_node_list import EdgeNodeList
@@ -29,7 +30,10 @@ from .message_manager import (
 )
 
 PING_INTERVAL = 1800
-
+# 受信可能数
+BACKLOG = 5
+# 最大同時処理数
+MAXWORKER = 5
 
 class ConnectionManager:
 
@@ -55,7 +59,6 @@ class ConnectionManager:
         self.__add_peer((host, my_port))
         self.mm = MessageManager()
         self.callback = callback
-
     def start(self):
         """
         最初の待受を開始する際に呼び出される（ServerCore向け
@@ -106,7 +109,7 @@ class ConnectionManager:
             peer : 接続先のIPアドレスとポート番号を格納するタプル
             msg : 送信したいメッセージ（JSON形式を想定）
         """
-        print('send_msg called', msg)
+        print('send_msg が呼び出されました', msg)
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((peer))
@@ -184,23 +187,23 @@ class ConnectionManager:
         """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.host, self.port))
-        self.socket.listen(100) #同時接続許可数
+        self.socket.listen(BACKLOG)
 
-        executor = ThreadPoolExecutor(max_workers=10)
+        with ThreadPoolExecutor(max_workers=MAXWORKER) as self.executor:
+            while True:
+                print('接続の待機を開始します ...\n')
+                #future = self.executor.submit(self.__handle_message, (1,2,3)) #ここでは実行できる
+                soc, addr = self.socket.accept()
+                #future = self.executor.submit(self.__handle_message, (1,2,3)) #ここから実行できない
+                print('接続されました ... ', addr)
 
-        while True:
-
-            print('接続を待機中 ...')
-            soc, addr = self.socket.accept()
-            print('接続されました ... ', addr)
-            data_sum = ''
-
-            params = (soc, addr, data_sum)
-            executor.submit(self.__handle_message, params)
+                params = (soc, addr, '')
+                future = self.executor.submit(self.__handle_message, params)
+                _ = wait([future])
 
     def __is_in_core_set(self, peer):
         """
-        与えられたnodeがCoreノードのリストに含まれているか？をチェックする
+        与えられたnodeがCoreノードのリストに含まれているかをチェックする
 
             param:
                 peer : IPアドレスとポート番号のタプル
@@ -221,6 +224,7 @@ class ConnectionManager:
 
             の３要素のタプル
         """
+        print('handle_message が呼び出されました')
         soc, addr, data_sum = params
 
         while True:
@@ -261,7 +265,7 @@ class ConnectionManager:
                 self.send_msg_to_all_peer(msg)
                 self.send_msg_to_all_edge(msg)
             elif cmd == MSG_PING:
-                # 特にやること思いつかない
+                # 何もしない
                 pass
             elif cmd == MSG_REQUEST_CORE_LIST:
                 print('List for Core nodes was requested!!')
