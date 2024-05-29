@@ -7,8 +7,7 @@ Zeney とは,仮想通貨システムのデモプログラムです
 
 # Requirement
 
-* python  
-* PyCrypto (モジュール)  
+* PyCrypto
 
 # Installation
 
@@ -21,9 +20,12 @@ pip install pycryptodome
 Server1.py は仮想通貨ネットワークの最初のサーバノードを起動するファイルです  
 Server2.py は2つめ以降のサーバノードを起動するファイルです  
 Wallet_app.py はウォレットノードを起動するファイルです  
-
 ```bash
 python Server1.py ポート番号 パスフレーズ
 python Server2.py  ポート番号 最初に接続するサーバのIPアドレス 最初に接続するサーバのポート番号 パスフレーズ
 python Wallet_app.py  ポート番号 最初に接続するサーバのIPアドレス 最初に接続するサーバのポート番号
 ```
+ポート番号はお使いのPCで空いているところを使う
+エフェメラルポート(自由に使えるポート)の49513～65535までを使うと良い  
+
+ソケット通信を行うため,ファイアウォールの設定で動作しないことがある  
