@@ -4,7 +4,7 @@ Zeneyは仮想通貨システムのデモプログラムです
 書籍「ゼロから創る暗号通貨」内のプログラムのフォークです  
 ライセンスは Apache License 2.0 (元プログラムと同様)  
 
-濵津 誠.ゼロから創る暗号通貨. PEAKS 出版,2018,305p 
+濵津 誠.ゼロから創る暗号通貨. PEAKS 出版,2018,305p  
 https://github.com/peaks-cc/cryptocurrency-samplecode   
 
 # Requirement
