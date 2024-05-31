@@ -7,16 +7,25 @@ Zeneyは仮想通貨システムのデモプログラムです
 濵津 誠.ゼロから創る暗号通貨. PEAKS 出版,2018,305p  
 https://github.com/peaks-cc/cryptocurrency-samplecode   
 
-# Requirement
-
-* PyCrypto
-
-# Installation
-
+# Setup
+### 1. 依存関係のインストール
 ※Windowsの場合
 ```bash
 pip install pycryptodome
 ```
+### 2. IPアドレスの設定
+`s1_start.bat`を**実行**。すると,自身のIPアドレスを取得できます(図1)。
+
+`s2_start.bat`及び`wallet_s1_start.bat`を**テキストエディタで開き**、IPアドレスを自身のIPアドレスに変更(図2)
+<!--StartFragment-->
+図1 | 図2
+-- | --
+![image](https://github.com/satra-11/Zeney/assets/115873069/8370eeee-0ae7-4b48-94b0-276fe23f7b79) | ![image](https://github.com/satra-11/Zeney/assets/115873069/65245252-3029-4b8e-9961-1230e96dcc5a)
+
+<!--EndFragment-->
+
+### 3. サーバーの起動
+`s2_start.bat`及び`wallet_s1_start.bat`を実行すると、walletアプリが起動します。
 
 # Usage
 
